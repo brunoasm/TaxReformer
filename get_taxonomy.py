@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 ### Created by Bruno de Medeiros (souzademedeiros@fas.harvard.edu), starting on 08-jun-2016
 ### The purpose of the script is to correct name spelling
@@ -20,7 +20,7 @@
 ### In addition to python packages listed below, the script requires GNparser
 ### https://github.com/GlobalNamesArchitecture/gnparser
 
-import argparse, requests, sys, subprocess, json, time, pygbif, warnings
+import argparse, requests, sys, subprocess, json, time, pygbif, warnings, pandas, os
 from fuzzywuzzy import fuzz #see note on function fuzzy_score
 from requests.exceptions import ConnectionError, SSLError
 #argparse below inside if __name__ == '__main__'
@@ -166,10 +166,10 @@ def taxonomy_OTT(ott_id = None):
 #currently accepted name, id on taxonomic service, level , taxonomic source and higher_taxonomy
 #All of them should also check if the name is an arthropod
 #If name not found as genus or species, it should return None
-def otl_checkname(query):
+def otl_checkname(query, context):
     outdict = None
     
-    r = otl_tnrs(query, do_approximate = False)
+    r = otl_tnrs(query, do_approximate = False, context = context)
     if r.json()['results']:
         result = r.json()['results'][0]['matches'][0]
         outdict = {'current_name': result['taxon']['name'], 
@@ -194,7 +194,7 @@ def otl_checkname(query):
 
             
             
-def gbif_checkname(query):
+def gbif_checkname(query, taxfilter):
     #since pygbif always autocompletes names, this can be a problem for genera
     #therefore, we will assume that, if query has spaces, it is a species, or a genus otherwise
     if ' ' in query:
@@ -209,13 +209,13 @@ def gbif_checkname(query):
         for i, first_match in enumerate(r['results']): #search for first match to an arthropod
             found = False
             for k,x in first_match.iteritems():
-                if x == 'Arthropoda':
+                if x in taxfilter:
                     found = True
                     break
             if found:
                 break
         else: #if loop ends, not an arthropod
-            warnings.warn(query + ': found in GBIF, but not an Arthropod')
+            warnings.warn(query + ': found in GBIF, but not a member of requested taxonomic filters: ' + ','.join(taxfilter))
             return None
                     
         #if an arthropod, get information
@@ -345,7 +345,7 @@ def fuzzy_search_GN(full_name, higher_taxon_filter = 'Arthropoda'):
 # If found on global names, name is subject to exact search on a number of services, using functions listed in variable namesearch_functions (currently only OTT and GBIF)
 
 def search_name(genus, species, gnpath, context = 'Arthropods', genus_only = False):
-    namesearch_functions = [otl_checkname, gbif_checkname]
+    namesearch_functions = [lambda x: otl_checkname(x, context=context), gbif_checkname]
     
     outdict = {'matched_name': None, 
                'current_name': None, 
@@ -525,11 +525,17 @@ def fuzzy_score(name1,name2):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', help = 'path to input file, containing one dictionary per line')
-    parser.add_argument('output', help = 'path to problem file')
-    parser.add_argument('-g', '--gnparser', help = 'path to GNparser', default = './gnparser-0.3.1/bin/gnparse')
-    parser.add_argument('-o','--overwrite', help = 'use this flag to overwrite all taxonomic information', action = 'store_true')
-    parser.add_argument('-n','--genus_search', help = 'use this flag to search with just genus information', action = 'store_true')
+    parser.add_argument('input', help = 'Path to input file, see docs for options')
+    #parser.add_argument('output', help = 'Path to problem file')
+    parser.add_argument('-t','--table', help = 'Use this flag if input and output are a csv tables instead of a text with python dict', action = 'store_true')
+    parser.add_argument('-p', '--gnparser', help = 'Path to GNparser', default = './gnparser-0.3.1/bin/gnparse')
+    parser.add_argument('-o','--overwrite', help = 'Use this flag to overwrite all taxonomic information', action = 'store_true')
+    parser.add_argument('-g','--genus-search', help = 'Use this flag to search for genus only', action = 'store_true')
+    parser.add_argument('-c','--context', help = 'Taxonomic context (see Open Tree Taxonomy API for options)', default = 'Arthropods')
+    parser.add_argument('-f','--tax-filter', help = '''Comma-separated list of names of higher taxa in which queries must be included. 
+                                                    Used to filter results from services other than Open Tree Taxonomy.
+                                                    A result matching any taxon in the list will be kept.''', 
+                                                    default = 'Arthropoda')
     args = parser.parse_args()
     gnpath = args.gnparser
     #args = parser.parse_args(['-o','egg_database.txt']) #this is here for testing
@@ -538,20 +544,29 @@ if __name__ == "__main__":
     #first, generate name of outfile
     #outbase = 'corrected_' + os.path.basename(args.input) #12-aug-16 we changed the folder structure. Keeping code here for now in case needed
     #outpath = os.path.join(os.path.dirname(args.input), outbase)
-    outpath = args.input
-    problems_path = args.output
+    outpath = 'matched.txt'
+    problems_path = 'unmatched.txt'
 
-    #read list of dictionaries
-    with open(args.input, 'r') as infile:
-        records = [eval(line) for line in infile]
+    #read input
+    if not args.table:
+        with open(args.input, 'r') as infile:
+            records = [eval(line) for line in infile]
+    else:
+        intable = pandas.read_csv(args.input)
+        intable = intable.rename(columns={'genus':'g','species':'s'})
+        records = intable.to_dict('records')
+        #print records
 
     #loop through records, correct names and add taxonomy. Write to file after each record
-    with open(outpath,'w') as outfile, open(problems_path, 'a') as problems:
+    with open(outpath,'w') as outfile, open(problems_path, 'w') as problems:
         #record version of ott taxonomy used here
         ott_version = requests.post('https://api.opentreeoflife.org/v3/taxonomy/about').json()['source']
 
         for i in xrange(len(records)):
-            has_tax = any([key.find('tax_') > -1 for key in records[i].iterkeys()])
+            try:
+                has_tax = any([key.find('tax_') > -1 for key in records[i].iterkeys()])
+            except KeyError:
+                has_tax = False
 
             #if marked not to overwrite and already has tax info, write record and go to next record
             if has_tax and not args.overwrite:
@@ -568,12 +583,12 @@ if __name__ == "__main__":
             records[i]['tax_ott_version'] = ott_version
             
             try:
-                searchname_response =  search_name(records[i]['g'],records[i]['s'], gnpath, genus_only = args.genus_search)
+                searchname_response =  search_name(records[i]['g'],records[i]['s'], gnpath, genus_only = args.genus_search, context = args.context)
             except (ValueError, TypeError):
                 searchname_response = None
             except KeyError as err:
                 if 's' in err.args:
-                    searchname_response = search_name(records[i]['g'],'', gnpath, genus_only = True)
+                    searchname_response = search_name(records[i]['g'],'', gnpath, genus_only = True, context = args.context)
                 else:
                     raise err
             
@@ -608,7 +623,7 @@ if __name__ == "__main__":
             #if can't be found in OTT, use the taxonomy from the name source
             #if no taxonomy from name source, output as a problem
             if searchname_response['tax_source'] != 'OTT':
-                ott_genus_search = otl_checkname(records[i]['cg'])
+                ott_genus_search = otl_checkname(records[i]['cg'], context = args.context)
                 if ott_genus_search and ott_genus_search['level'] == 'genus' and ott_genus_search['higher_taxonomy']:
                     records[i].update(ott_genus_search['higher_taxonomy'])
                     records[i]['tax_taxonomy_source'] = 'OTT'
@@ -629,8 +644,8 @@ if __name__ == "__main__":
                 records[i].update(searchname_response['higher_taxonomy'])
                 
 
-            parsed_orders = ['Strepsiptera','Phasmatodea','Orthoptera','Neuroptera','Hemiptera','Ephemeroptera','Coleoptera','Lepidoptera','Hymenoptera','Odonata','Blattodea','Dermaptera','Diptera','Embioptera','Grylloblattodea','Isoptera','Mantophasmatodea','Mecoptera','Megaloptera','Phthiraptera','Plecoptera','Psocoptera','Raphidioptera','Siphonaptera','Thysanoptera','Trichoptera','Zoraptera']
-            permitted_orders = ['Diplura','Collembola','Mantodea','Protura','Thysanura','Zygentoma','Archaeognatha','Strepsiptera','Phasmatodea','Orthoptera','Neuroptera','Hemiptera','Ephemeroptera','Coleoptera','Lepidoptera','Hymenoptera','Odonata','Blattodea','Dermaptera','Diptera','Embioptera','Grylloblattodea','Isoptera','Mantophasmatodea','Mecoptera','Megaloptera','Phthiraptera','Plecoptera','Psocoptera','Raphidioptera','Siphonaptera','Thysanoptera','Trichoptera','Zoraptera']
+            #parsed_orders = ['Strepsiptera','Phasmatodea','Orthoptera','Neuroptera','Hemiptera','Ephemeroptera','Coleoptera','Lepidoptera','Hymenoptera','Odonata','Blattodea','Dermaptera','Diptera','Embioptera','Grylloblattodea','Isoptera','Mantophasmatodea','Mecoptera','Megaloptera','Phthiraptera','Plecoptera','Psocoptera','Raphidioptera','Siphonaptera','Thysanoptera','Trichoptera','Zoraptera']
+            #permitted_orders = ['Diplura','Collembola','Mantodea','Protura','Thysanura','Zygentoma','Archaeognatha','Strepsiptera','Phasmatodea','Orthoptera','Neuroptera','Hemiptera','Ephemeroptera','Coleoptera','Lepidoptera','Hymenoptera','Odonata','Blattodea','Dermaptera','Diptera','Embioptera','Grylloblattodea','Isoptera','Mantophasmatodea','Mecoptera','Megaloptera','Phthiraptera','Plecoptera','Psocoptera','Raphidioptera','Siphonaptera','Thysanoptera','Trichoptera','Zoraptera']
 
             #If record contains taxonomic tree and is in the correct Order, save to outfile
             
@@ -642,16 +657,16 @@ if __name__ == "__main__":
                 print >>problems, records[i]
                 sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
                 continue              
-            elif records[i]['order1'] in parsed_orders and records[i]['tax_order'] != records[i]['order1']:
-                records[i].update({'problem':'order'})
-                print >>problems, records[i]
-                sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
-                continue
-            elif records[i]['tax_order'] not in permitted_orders:
-                records[i].update({'problem':'order'})
-                print >>problems, records[i]
-                sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
-                continue              
+            #elif records[i]['order1'] in parsed_orders and records[i]['tax_order'] != records[i]['order1']:
+            #    records[i].update({'problem':'order'})
+            #    print >>problems, records[i]
+            #    sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
+            #    continue
+            #elif records[i]['tax_order'] not in permitted_orders:
+            #    records[i].update({'problem':'order'})
+            #    print >>problems, records[i]
+            #    sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
+            #    continue              
                     
             #finally, if record had a species read from OCR but only genus found, output to problems
             
@@ -673,4 +688,39 @@ if __name__ == "__main__":
                 
             
             sys.stdout.flush()
+            
+    #if table input, should write table output and delete dict output        
+    if args.table:
+        print 'Search finished, deleting temporary files and writing table output.'
+        with open(outpath,'r') as outfile, open(problems_path, 'r') as problems:
+            matched = [eval(line) for line in outfile]
+            unmatched = [eval(line) for line in problems]
+        matched_df = pandas.DataFrame(matched)
+        unmatched_df = pandas.DataFrame(unmatched)
+        
+        
+        update_dict = {'g':'genus',
+                       's':'species'}
+        
+        matched_df.rename(columns=update_dict, inplace=True)
+        #matched_df.rename(axis='columns', inplace=True, mapper = lambda x: x.replace('tax_',''))
+        matched_df.rename(inplace=True, columns= lambda x: x.replace('tax_',''))
+        matched_df.rename(inplace=True, columns= lambda x: x.replace('cg','updated_genus'))
+        matched_df.rename(inplace=True, columns= lambda x: x.replace('cs','updated_species'))
+        
+        unmatched_df.rename(columns=update_dict, inplace=True)
+        #unmatched_df.rename(axis='columns', inplace=True, mapper = lambda x: x.replace('tax_',''))
+        unmatched_df.rename(inplace=True, columns = lambda x: x.replace('tax_',''))
+        unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cg','updated_genus'))
+        unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cs','updated_species'))
+        
+        matched_df.to_csv('matched_names.csv')
+        unmatched_df.to_csv('unmatched_names.csv')
+        
+        os.remove(outpath)
+        os.remove(problems_path)
+        
+        print problems_path
+        
+        
 
