@@ -68,6 +68,7 @@ Same as before, but giving the path to GNparser (in the same folder as the input
 ```python TaxReformer.py --gnparser ./gnparser --context Birds --tax-filter Aves input.csv```
 
 The folder [examples](./examples/) contains a test input file and the expected output when running:
+
 ```python TaxReformer.py examples/input.csv```
 
 ## Warnings
