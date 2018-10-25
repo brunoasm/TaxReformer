@@ -37,7 +37,8 @@ from requests.exceptions import ConnectionError, SSLError
 
 def GNparser(name, gnpath):
     out_dict = {}
-    result_string = subprocess.check_output([gnpath, 'name', name]) #call GNparser
+    result_string = subprocess.check_output([gnpath, 'name', name],
+                       stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT) #call GNparser
     result_dict = json.loads(result_string)['details'][0]
     try:
         out_dict['cg'] = result_dict['genus']['value']
