@@ -1,6 +1,6 @@
 # TaxReformer
 
-This is a python program that uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to update a list of species or genus names, possibly with spell errors.
+This python program uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to update a list of species or genus names, possibly with spell errors.
 
 It tries to use Open Tree Taxonomy whenever possible, pulling information from other databases in case a name is not found there. The source of information retrieved is saved in the output, so records not on OTT can be easily filtered out.
 
