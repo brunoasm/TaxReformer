@@ -21,6 +21,7 @@
 ### https://github.com/GlobalNamesArchitecture/gnparser
 
 import argparse, requests, sys, subprocess, json, time, pygbif, warnings, pandas, os
+from numpy import nan #needed to parse temporary files
 from fuzzywuzzy import fuzz #see note on function fuzzy_score
 from requests.exceptions import ConnectionError, SSLError
 #argparse below inside if __name__ == '__main__'
@@ -33,21 +34,21 @@ from requests.exceptions import ConnectionError, SSLError
 # cs: corrected species name
 # csub: corrected subspecific names
 
-#gnpath = '' #placeholder for gnpath. It is defined in the main script
-def GNparser(name, path):
+
+def GNparser(name, gnpath):
     out_dict = {}
-    result_string = subprocess.check_output([path, 'name', name]) #call GNparser
+    result_string = subprocess.check_output([gnpath, 'name', name]) #call GNparser
     result_dict = json.loads(result_string)['details'][0]
     try:
         out_dict['cg'] = result_dict['genus']['value']
     except KeyError:
         pass
     try:
-        out_dict['cs'] = result_dict['specific_epithet']['value']
+        out_dict['cs'] = result_dict['specificEpithet']['value']
     except KeyError:
         pass
     try:
-        out_dict['csub'] = result_dict['infraspecific_epithet']['value']
+        out_dict['csub'] = result_dict['infraspecificEpithets']['value']
     except KeyError:
         pass
     try:
@@ -69,14 +70,18 @@ def otl_tnrs(query, do_approximate = True, wait_time = 600, context = 'Arthropod
                             'do_approximate_matching':do_approximate,
                             'context_name':context})
         except (SSLError, ConnectionError):
-            print time.ctime() + ': ' + 'Error while connnecting to Open Tree of Life, will try again in ' + str(wait_time) + ' seconds.'
+            sys.stderr.write(time.ctime() + ': ' + 
+                             'Error while connnecting to Open Tree of Life, will try again in ' + 
+                             str(wait_time) + ' seconds.')
             time.sleep(wait_time)
             continue
 
         if r.status_code == 200:
             contact_otl = False
         else:
-            print time.ctime() + ': ' + 'Error with Open Tree of Life response, will try again in ' + str(wait_time) + ' seconds.'
+            sys.stderr.write(time.ctime() + ': ' + 
+                             'Error with Open Tree of Life response, will try again in ' + 
+                             str(wait_time) + ' seconds.')
             time.sleep(wait_time)
             continue
     return r
@@ -97,7 +102,10 @@ def otl_taxon(query, wait_time = 600, ncbi = False):
                                 data = {'ott_id':query, #id for taxon being searched
                                         'include_lineage':True}) #include higher taxa
         except (SSLError, ConnectionError):
-            print time.ctime() + ': ' + 'Error while connnecting to Open Tree of Life, will try again in ' + str(wait_time) + ' seconds.'
+            sys.stderr.write(time.ctime() + ': ' + 
+                             'Error while connnecting to Open Tree of Life, will try again in ' + 
+                             str(wait_time) + 
+                             ' seconds.')
             time.sleep(wait_time)
             continue
 
@@ -105,11 +113,13 @@ def otl_taxon(query, wait_time = 600, ncbi = False):
             contact_otl = False
         elif r.status_code == 400:
             contact_otl = False
-            print r.json()['message']
-            print 'skipping'
+            sys.stderr.write(r.json()['message'])
+            sys.stderr.write('skipping')
             return None
         else:
-            print time.ctime() + ': ' + 'Error while contacting Open Tree of Life, will try again in ' + str(wait_time) + ' seconds.'
+            sys.stderr.write(time.ctime() + ': ' +
+                             'Error while contacting Open Tree of Life, will try again in ' + 
+                             str(wait_time) + ' seconds.')
             time.sleep(wait_time)
     return r
 
@@ -208,13 +218,19 @@ def gbif_checkname(query, taxfilter):
     if r['count']:
         for i, first_match in enumerate(r['results']): #search for first match to an arthropod
             found = False
-            for k,x in first_match.iteritems():
+            
+            if not taxfilter: #if taxonomic filter not provided, always keep record
+                found = True
+                break
+            
+            for k,x in first_match.iteritems(): #if taxonomic filter provided, only keep if matches filter
                 if x in taxfilter:
                     found = True
                     break
+                
             if found:
                 break
-        else: #if loop ends, not an arthropod
+        else: #if loop ends, record does not match filter
             warnings.warn(query + ': found in GBIF, but not a member of requested taxonomic filters: ' + ','.join(taxfilter))
             return None
                     
@@ -275,7 +291,7 @@ def parse_GN_classpath(GN_result):
     return {'tax_level':this_rank, 'higher_taxonomy':taxdict}
                
 
-def fuzzy_search_GN(full_name, higher_taxon_filter = 'Arthropoda'):
+def fuzzy_search_GN(full_name, taxfilter):
     #start by fuzzy searching Global Names
     results_with_classpath = []
     all_results = []    
@@ -289,8 +305,7 @@ def fuzzy_search_GN(full_name, higher_taxon_filter = 'Arthropoda'):
             break
         except ConnectionError as err:
             trycounter += 1
-            print err
-            print 'Trying again'
+            sys.stderr.write(err + '\n' + 'Trying again')
     else:
         'More than 10 failed connection attempts, skipping.'
         return None
@@ -300,10 +315,10 @@ def fuzzy_search_GN(full_name, higher_taxon_filter = 'Arthropoda'):
         for result in r.json()['data'][0]['results']:
             all_results.append(result)
 
-            if higher_taxon_filter and \
+            if taxfilter and \
             'classification_path' in result.keys() and \
             result['classification_path'] is not None and \
-            higher_taxon_filter in result['classification_path']:
+            taxfilter in result['classification_path']:
                 results_with_classpath.append(result)
 
     #now we choose what to search for an exact match in ott
@@ -344,8 +359,9 @@ def fuzzy_search_GN(full_name, higher_taxon_filter = 'Arthropoda'):
 # Starts by fuzzy searching OTL, and then Global names if can't find it
 # If found on global names, name is subject to exact search on a number of services, using functions listed in variable namesearch_functions (currently only OTT and GBIF)
 
-def search_name(genus, species, gnpath, context = 'Arthropods', genus_only = False):
-    namesearch_functions = [lambda x: otl_checkname(x, context=context), gbif_checkname]
+def search_name(genus, species, gnpath, context, taxfilter, genus_only = False):
+    namesearch_functions = [lambda x: otl_checkname(x, context=context), 
+                            lambda x: gbif_checkname(x, taxfilter=taxfilter)]
     
     outdict = {'matched_name': None, 
                'current_name': None, 
@@ -363,7 +379,7 @@ def search_name(genus, species, gnpath, context = 'Arthropods', genus_only = Fal
         full_name = genus + ' ' + species
 
         
-    GN_search_result = fuzzy_search_GN(full_name)    
+    GN_search_result = fuzzy_search_GN(full_name, taxfilter = taxfilter)    
         
     #now check if chosen result has genus and species or only species
     if GN_search_result:
@@ -376,7 +392,7 @@ def search_name(genus, species, gnpath, context = 'Arthropods', genus_only = Fal
             genus_to_search = chosen_name['cg']
     #if no result and we searched for genus + species, trying searching for genus only
     elif species:
-        GN_search_result = fuzzy_search_GN(genus)
+        GN_search_result = fuzzy_search_GN(genus, taxfilter = taxfilter)
         if GN_search_result:
             try:
                 chosen_name = GNparser(GN_search_result['current_name_string'],gnpath)
@@ -527,17 +543,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help = 'Path to input file, see docs for options')
     #parser.add_argument('output', help = 'Path to problem file')
-    parser.add_argument('-t','--table', help = 'Use this flag if input and output are a csv tables instead of a text with python dict', action = 'store_true')
-    parser.add_argument('-p', '--gnparser', help = 'Path to GNparser', default = './gnparser-0.3.1/bin/gnparse')
+    parser.add_argument('-p', '--gnparser', help = 'Path to GNparser')
     parser.add_argument('-o','--overwrite', help = 'Use this flag to overwrite all taxonomic information', action = 'store_true')
     parser.add_argument('-g','--genus-search', help = 'Use this flag to search for genus only', action = 'store_true')
-    parser.add_argument('-c','--context', help = 'Taxonomic context (see Open Tree Taxonomy API for options)', default = 'Arthropods')
+    parser.add_argument('-c','--context', help = 'Taxonomic context (see Open Tree Taxonomy API for options)', default = 'All life')
     parser.add_argument('-f','--tax-filter', help = '''Comma-separated list of names of higher taxa in which queries must be included. 
                                                     Used to filter results from services other than Open Tree Taxonomy.
-                                                    A result matching any taxon in the list will be kept.''', 
-                                                    default = 'Arthropoda')
+                                                    A result matching any taxon in the list will be kept.''')
+    parser.add_argument('-d','--dict-input', help = 'Use this flag if input and output are python dict instead of csv', action = 'store_true')
+    
     args = parser.parse_args()
-    gnpath = args.gnparser
+    if not args.gnparser:
+        gnpath = 'gnparser'    
+    else:
+        gnpath = args.gnparser
     #args = parser.parse_args(['-o','egg_database.txt']) #this is here for testing
 
 
@@ -548,7 +567,7 @@ if __name__ == "__main__":
     problems_path = 'unmatched.txt'
 
     #read input
-    if not args.table:
+    if args.dict_input:
         with open(args.input, 'r') as infile:
             records = [eval(line) for line in infile]
     else:
@@ -562,7 +581,7 @@ if __name__ == "__main__":
         #record version of ott taxonomy used here
         ott_version = requests.post('https://api.opentreeoflife.org/v3/taxonomy/about').json()['source']
 
-        for i in xrange(len(records)):
+        for i in range(len(records)):
             try:
                 has_tax = any([key.find('tax_') > -1 for key in records[i].iterkeys()])
             except KeyError:
@@ -583,12 +602,12 @@ if __name__ == "__main__":
             records[i]['tax_ott_version'] = ott_version
             
             try:
-                searchname_response =  search_name(records[i]['g'],records[i]['s'], gnpath, genus_only = args.genus_search, context = args.context)
+                searchname_response =  search_name(records[i]['g'],records[i]['s'], gnpath, genus_only = args.genus_search, context = args.context, taxfilter = args.tax_filter)
             except (ValueError, TypeError):
                 searchname_response = None
             except KeyError as err:
                 if 's' in err.args:
-                    searchname_response = search_name(records[i]['g'],'', gnpath, genus_only = True, context = args.context)
+                    searchname_response = search_name(records[i]['g'],'', gnpath, genus_only = True, context = args.context, taxfilter = args.tax_filter)
                 else:
                     raise err
             
@@ -690,37 +709,38 @@ if __name__ == "__main__":
             sys.stdout.flush()
             
     #if table input, should write table output and delete dict output        
-    if args.table:
-        print 'Search finished, deleting temporary files and writing table output.'
+    if not args.dict_input:
+        sys.stderr.write('Search finished, deleting temporary files and writing table output.\n')
         with open(outpath,'r') as outfile, open(problems_path, 'r') as problems:
             matched = [eval(line) for line in outfile]
             unmatched = [eval(line) for line in problems]
-        matched_df = pandas.DataFrame(matched)
-        unmatched_df = pandas.DataFrame(unmatched)
+
         
         
         update_dict = {'g':'genus',
                        's':'species'}
         
-        matched_df.rename(columns=update_dict, inplace=True)
-        #matched_df.rename(axis='columns', inplace=True, mapper = lambda x: x.replace('tax_',''))
-        matched_df.rename(inplace=True, columns= lambda x: x.replace('tax_',''))
-        matched_df.rename(inplace=True, columns= lambda x: x.replace('cg','updated_genus'))
-        matched_df.rename(inplace=True, columns= lambda x: x.replace('cs','updated_species'))
+        if matched:
+            matched_df = pandas.DataFrame(matched)
+            matched_df.rename(columns=update_dict, inplace=True)
+            #matched_df.rename(axis='columns', inplace=True, mapper = lambda x: x.replace('tax_',''))
+            matched_df.rename(inplace=True, columns= lambda x: x.replace('tax_',''))
+            matched_df.rename(inplace=True, columns= lambda x: x.replace('cg','updated_genus'))
+            matched_df.rename(inplace=True, columns= lambda x: x.replace('cs','updated_species'))
+            matched_df.to_csv('matched_names.csv')
         
-        unmatched_df.rename(columns=update_dict, inplace=True)
-        #unmatched_df.rename(axis='columns', inplace=True, mapper = lambda x: x.replace('tax_',''))
-        unmatched_df.rename(inplace=True, columns = lambda x: x.replace('tax_',''))
-        unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cg','updated_genus'))
-        unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cs','updated_species'))
+        if unmatched:
+            unmatched_df = pandas.DataFrame(unmatched)
+            unmatched_df.rename(columns=update_dict, inplace=True)
+            #unmatched_df.rename(axis='columns', inplace=True, mapper = lambda x: x.replace('tax_',''))
+            unmatched_df.rename(inplace=True, columns = lambda x: x.replace('tax_',''))
+            unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cg','updated_genus'))
+            unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cs','updated_species'))
+            unmatched_df.to_csv('unmatched_names.csv')
         
-        matched_df.to_csv('matched_names.csv')
-        unmatched_df.to_csv('unmatched_names.csv')
         
         os.remove(outpath)
         os.remove(problems_path)
-        
-        print problems_path
         
         
 
