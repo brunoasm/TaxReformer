@@ -1,0 +1,5 @@
+,updated_genus,updated_species,genus,species,updated_genus_ncbi_id,updated_genus_ott_id,class,updated_species_ncbi_id,updated_species_ott_id,family,higher_source,infraclass,infraorder,matched,matched_id_in_source,name_source,order,ott_version,score,subclass,subfamily,suborder,subphylum,subtribe,superfamily,superorder,taxonomy_source,tribe
+0,Canis,lupus,Canis,familiaris,9611,372706,Sarcopterygii,9612,247341,Canidae,OTT,,,Canis familiaris,247341,OTT,Carnivora,ott3.0draft6,100,Theria,,Caniformia,Craniata,,,Laurasiatheria,OTT,
+1,Curculio,camelliae,Curculio,cameliaee,13024,764283,Insecta,238722,347510,Curculionidae,OTT,Endopterygota,Cucujiformia,Curculio camelliae,347510,OTT,Coleoptera,ott3.0draft6,94,Pterygota,Curculioninae,Polyphaga,,,Curculionoidea,,OTT,Curculionini
+2,Anodorhynchus,leari,Anodorhynus,leari,51899,717642,Sarcopterygii,178882,789645,Psittacidae,OTT,,,Anodorhynchus leari,789645,OTT,Sauria,ott3.0draft6,94,,,,Craniata,,,Neognathae,OTT,
+3,Syagrus,botryophora,Syagrus,botryophora,115519,811500,Liliopsida,682617,1002298,Arecaceae,OTT,,,Syagrus botryophora,1002298,OTT,Arecales,ott3.0draft6,100,commelinids,Arecoideae,,,Attaleinae,,,OTT,Cocoseae
