@@ -1,10 +1,10 @@
 # TaxReformer
 
-This python program uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to update a list of species or genus names, possibly with spell errors.
+This python program uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to update a list of species or genus names, possibly containing spell errors.
 
 It tries to use Open Tree Taxonomy whenever possible, pulling information from other databases in case a name is not found there. The source of information retrieved is saved in the output, so records not on OTT can be easily filtered out.
 
-It looks up the provided names in these databases and returns a list of most likely matches, including nomenclatural updates (in case of a synonym) and taxonomic hierarchy.
+In addition to corrected names with nomenclatural updates (in case of a synonym), the full taxonomic hierarchy is also returned. This tool was first used to study the evolution of insect eggs, and we will soon submit the manuscript.
 
 ## Dependencies
 
