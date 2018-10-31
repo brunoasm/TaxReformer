@@ -27,7 +27,7 @@ In case GNparser is not on your $PATH, you need to provide its location (see usa
 ## Input
 Default input format is a csv table containing columns named **genus** and **species**
 
-In Church, Seth et al, we used a text file representing a python dictionary as input. This format can be accepted by using the flag `-d` (see options below)
+In Church, Donoughe et al, we used a text file representing a python dictionary as input. This format can be accepted by using the flag `-d` (see options below)
 
 ## Output
 After a successful run, the program will write two output files names `matched_names.csv` and `unmatched_names.csv`, for names that could and could not be matched, respectively. These include all columns initially present in the input data table, as well as new columns with information retrieved by TaxReformer.
