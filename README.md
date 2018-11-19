@@ -39,8 +39,7 @@ After a successful run, the program will write two output files names `matched_n
 
 `-p` or `--gnparser` Path to GNparser executable. Not needed if it is on `$PATH`
 
-`-o` or `--overwrite` Overwrite taxonomic information if available. Without this flag, the program skips records that already have it.
-
+`-o` or `--overwrite` Overwrite taxonomic information if available. Without this flag, the program skips records that already have updated genus or species names.
 
 `-g` or `--genus-search` Use this if you want to ignore species names and search for genera only
 
@@ -63,6 +62,10 @@ To find bird names from a file named **input.csv**:
 
 ```python TaxReformer.py --context Birds --tax-filter Aves input.csv```
 
+To find names of termites, considering that they might be classified under roaches in some databases. Notice also that Open Tree of Life does not have a context for termites, so we will use insects instead:
+
+```python TaxReformer.py --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
+
 Same as before, but giving the path to GNparser (in the same folder as the input)
 
 ```python TaxReformer.py --gnparser ./gnparser --context Birds --tax-filter Aves input.csv```
@@ -75,9 +78,9 @@ The folder [examples](./examples/) contains a test input file and the expected o
 
 This program was developed for a specific application and I am slowly working to make it more generally useful. If you want to use it and run into trouble, don't hesitate adding an issue: https://github.com/brunoasm/TaxReformer/issues
 
-The program tries its best to find your names in some database, but different databases have different taxon coverages, levels of information and API require different inputs. For that reason, it is hard to make bulk searches: each name is searched individually, and this might happen several times if a match is not easily found. Open Tree of Life and Global Names Server might get mad at you if you try too many names, therefore making thousands or millions of requests to their servers. You should only use this tool for a small number of names each time you run. In our case, we searched a little less than 10,000 records, which took about one day.
+The program tries its best to find your names in some database, but different databases have different taxon coverages and APIs also require different inputs. For that reason, it is hard to make bulk searches: each name will be searched individually, and this might happen several times per name if a match is not easily found. Open Tree of Life and Global Names Server might get mad at you if you make thousands or millions of requests to their servers. You should only use this tool for a somewhat small number of names each time you run. In our case, we searched a little less than 10,000 records, which took about one day.
 
-Since each database uses different higher taxonomies, it is hard to delimit contexts. For example, Open Tree Taxonomy uses *Birds* to constrain search to birds, but to constrain on other databases we need to filter out taxa not contained in *Aves*. To delimit search to your taxa of interest, you will have to play both with `--context` and `tax-filter` (see examples above)
+Since each database uses different higher taxonomies, it is hard to delimit contexts. For example, Open Tree Taxonomy uses *Birds* to constrain search to birds, but to constrain the same search on other databases we need to filter out taxa not contained in *Aves*. To delimit search to your taxa of interest, you will have to play both with `--context` and `tax-filter` (see examples above)
 
 # Author
 
