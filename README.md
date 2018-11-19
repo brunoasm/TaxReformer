@@ -62,13 +62,13 @@ To find bird names from a file named **input.csv**:
 
 ```python TaxReformer.py --context Birds --tax-filter Aves input.csv```
 
-To find names of termites, considering that they might be classified under roaches in some databases. Notice also that Open Tree of Life does not have a context for termites, so we will use insects instead:
-
-```python TaxReformer.py --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
-
 Same as before, but giving the path to GNparser (in the same folder as the input)
 
 ```python TaxReformer.py --gnparser ./gnparser --context Birds --tax-filter Aves input.csv```
+
+To find names of termites, considering that they might be classified under roaches in some databases. Notice also that Open Tree of Life does not have a context for termites, so we will use insects instead:
+
+```python TaxReformer.py --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
 
 The folder [examples](./examples/) contains a test input file and the expected output when running:
 
