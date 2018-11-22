@@ -8,14 +8,11 @@ In addition to corrected names with nomenclatural updates (in case of a synonym)
 
 ## Dependencies
 
-This script runs on python 2.7 and needs the following python packages:
+This script runs on python 2.7 and needs the following python libraries:
 ```
-argparse
-requests
-pygibif
+pygbif
 pandas
 fuzzywuzzy
-requests
 ```
 
 Additionally, you need to download [GNparser](https://github.com/GlobalNamesArchitecture/gnparser#command-line-tool-and-socket-server): https://github.com/GlobalNamesArchitecture/gnparser#command-line-tool-and-socket-server. TaxReformer is compatible with GNparser v. 1.0.2.
