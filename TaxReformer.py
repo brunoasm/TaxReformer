@@ -742,14 +742,7 @@ if __name__ == "__main__":
                        'family',
                        'tribe'] for prefyx in ['super','','sub','infra','parv']]
     
-    
-    if matched:
-        matched_df = pandas.DataFrame(matched)
-        
-        
-        present_ranks = [tax for tax in taxonomic_ranks if tax in matched_df.columns]
-        
-        ordered_cols = ['name',
+    first_cols = ('name',
                         'tax_updated_fullname',
                         'tax_taxonomy_source',
                         'rank',
@@ -768,8 +761,16 @@ if __name__ == "__main__":
                         'csub',
                         'tax_ott_accepted_name',
                         'tax_ott_version',
-                        'tax_higher_source']
+                        'tax_higher_source')
+    
+    
+    if matched:
+        matched_df = pandas.DataFrame(matched)
         
+        
+        present_ranks = [tax for tax in taxonomic_ranks if tax in matched_df.columns]
+        
+        ordered_cols = list(first_cols)
         ordered_cols.extend(present_ranks)
         ordered_cols.extend(other_cols)
         
@@ -777,7 +778,7 @@ if __name__ == "__main__":
         ordered_cols.extend(final_cols)
         
         
-        matched_df = matched_df[ordered_cols]
+        matched_df = matched_df[[ col for col in ordered_cols if col in matched_df.columns]]
         matched_df.rename(inplace=True, columns= lambda x: x.replace('tax_',''))
         matched_df.rename(inplace=True, columns= lambda x: x.replace('rank','rank_matched'))
         matched_df.rename(inplace=True, columns= lambda x: x.replace('csub','updated_subspecies'))
@@ -786,10 +787,18 @@ if __name__ == "__main__":
         matched_df.to_csv('matched_names.csv')
     
     if unmatched:
+        
         unmatched_df = pandas.DataFrame(unmatched)
         
+        ordered_cols = list(first_cols)
+        ordered_cols.extend(other_cols)
+        final_cols = [col for col in unmatched_df.columns if col not in ordered_cols]
+        ordered_cols.extend(final_cols)
+        
+        unmatched_df = unmatched_df[[ col for col in ordered_cols if col in unmatched_df.columns]]
+        
         unmatched_df.rename(inplace=True, columns = lambda x: x.replace('tax_',''))
-        matched_df.rename(inplace=True, columns= lambda x: x.replace('rank','rank_matched'))
+        unmatched_df.rename(inplace=True, columns= lambda x: x.replace('rank','rank_matched'))
         unmatched_df.rename(inplace=True, columns = lambda x: x.replace('csub','updated_subspecies'))
         unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cg','updated_genus'))
         unmatched_df.rename(inplace=True, columns = lambda x: x.replace('cs','updated_species'))
