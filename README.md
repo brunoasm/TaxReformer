@@ -24,7 +24,7 @@ In case GNparser is not on your $PATH, you need to provide its location (see usa
 ## Input
 Default input format is a csv table containing columns named **genus** and **species**
 
-In Church, Donoughe et al, we used a text file representing a python dictionary as input. This format can be accepted by using the flag `-d` (see options below)
+In Church, Donoughe et al, we used a text file representing a python dictionary as input. This is no longer supported.
 
 ## Output
 After a successful run, the program will write two output files names `matched_names.csv` and `unmatched_names.csv`, for names that could and could not be matched, respectively. These include all columns initially present in the input data table, as well as new columns with information retrieved by TaxReformer.
@@ -41,8 +41,6 @@ After a successful run, the program will write two output files names `matched_n
 `-c` or `--context` Taxonomic context to use for Open Tree Taxonomy (see [Open Tree of Life API](https://github.com/OpenTreeOfLife/germinator/wiki/TNRS-API-v3#contexts) for options). Defaults to **"All life"**
 
 `-f` or `--tax-filter` Taxonomy contexts to use for other services. This is a comma-separated list of names of higher taxa in which queries must be included. Used to filter results from services other than Open Tree Taxonomy. A result matching any taxon in the list will be kept. Therefore, if a result is not included in any of these higher taxa, it will be excluded. 
-
-`-d` or `--dict-input` Input and output as dictionaries instead of a table
 
 ## Examples
 
