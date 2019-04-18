@@ -38,8 +38,6 @@ After a successful run, the program will write two output files names `matched_n
 
 `-o` or `--overwrite` Overwrite taxonomic information if available. Without this flag, the program skips records that already have updated genus or species names.
 
-`-g` or `--genus-search` Use this if you want to ignore species names and search for genera only
-
 `-c` or `--context` Taxonomic context to use for Open Tree Taxonomy (see [Open Tree of Life API](https://github.com/OpenTreeOfLife/germinator/wiki/TNRS-API-v3#contexts) for options). Defaults to **"All life"**
 
 `-f` or `--tax-filter` Taxonomy contexts to use for other services. This is a comma-separated list of names of higher taxa in which queries must be included. Used to filter results from services other than Open Tree Taxonomy. A result matching any taxon in the list will be kept. Therefore, if a result is not included in any of these higher taxa, it will be excluded. 
