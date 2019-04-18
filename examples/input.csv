@@ -1,6 +1,10 @@
-genus,species
-Canis,familiaris
-Curculio,cameliaee
-Anodorhynus,leari
-Syagrus,botryophora
-Anchylorhynchus,eriospathae
+name,other_info1,other_info2
+Canis familiaris,A,1
+Curculio cameliaee,B,2
+Anodorhynus leari,C,3
+Syagrus botryophora,A,4
+Ancoylorhynchus trapezicollis,B,5
+Fissurellidae,C,6
+Mammalia,D,7
+Archaea,E,8
+Notanamus notreally,F,9
