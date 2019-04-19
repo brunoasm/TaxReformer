@@ -159,22 +159,22 @@ def taxonomy_OTT(ott_id = None):
         try:
             genus_tax = [tax for tax in r.json()['lineage'] if tax['rank'] == 'genus'][0]
         except IndexError:
-            out_dict[u'tax_cg_ott_id'] = nan
+            out_dict['tax_cg_ott_id'] = nan
             if out_dict['rank'] in ['species', 'subspecies']:
-                out_dict[u'cg'] = r.json()['unique_name'].split()[0]
+                out_dict['cg'] = r.json()['unique_name'].split()[0]
         else:
-            out_dict[u'tax_cg_ott_id'] = genus_tax['ott_id']
-            out_dict[u'cg'] = out_dict['tax_genus']
+            out_dict['tax_cg_ott_id'] = genus_tax['ott_id']
+            out_dict['cg'] = out_dict['tax_genus']
             del out_dict['tax_genus']
             try:
-                out_dict.update({u'tax_cg_ncbi_id':list2dict(genus_tax['tax_sources'])['ncbi']})
+                out_dict.update({'tax_cg_ncbi_id':list2dict(genus_tax['tax_sources'])['ncbi']})
             except KeyError:
                 pass
                 #warnings.warn('Genus ' + out_dict['cg'] +  ' not in ncbi!')
     #if subspecific rank, update ids ofr species
     try:
         species_tax = [tax for tax in r.json()['lineage'] if tax['rank'] == 'species'][0]
-        out_dict[u'tax_cs_ott_id'] = species_tax['ott_id']
+        out_dict['tax_cs_ott_id'] = species_tax['ott_id']
     except:
         pass
     
@@ -329,12 +329,12 @@ def fuzzy_search_GN(full_name, taxfilter):
         return None
     
     #save only results with a classification path including taxfilter               
-    if 'results' in r.json()['data'][0].keys():
+    if 'results' in list(r.json()['data'][0].keys()):
         for result in r.json()['data'][0]['results']:
             all_results.append(result)
 
             if taxfilter and \
-            'classification_path' in result.keys() and \
+            'classification_path' in list(result.keys()) and \
             result['classification_path'] is not None and \
             taxfilter in result['classification_path']:
                 results_with_classpath.append(result)
@@ -401,7 +401,7 @@ def search_name(full_name, gnpath, context, taxfilter):
             chosen_name = GNparser(GN_search_result['current_name_string'],gnpath)
         except:
             chosen_name = GNparser(GN_search_result['canonical_form'],gnpath)
-        if 'cs' not in chosen_name.keys():
+        if 'cs' not in list(chosen_name.keys()):
             search_for_genus = True
             genus_to_search = chosen_name['cg']
     #if no result and we searched for genus + species, trying searching for genus only
@@ -426,9 +426,9 @@ def search_name(full_name, gnpath, context, taxfilter):
     #if we find a species, return with information from open tree of life
     if not search_for_genus:
         #chosen_name = GNparser(GN_search_result['canonical_form'],gnpath)
-        if 'csub' in chosen_name.keys(): 
+        if 'csub' in list(chosen_name.keys()): 
             full_name_to_search  = ' '.join([chosen_name['cg'],chosen_name['cs'],chosen_name['csub']])
-        elif 'cs' in chosen_name.keys():
+        elif 'cs' in list(chosen_name.keys()):
             full_name_to_search  = ' '.join([chosen_name['cg'],chosen_name['cs']])
         else:
             full_name_to_search  = chosen_name['cg']
@@ -515,10 +515,10 @@ def search_name(full_name, gnpath, context, taxfilter):
             outdict['source_id'] = r['id']
             outdict['tax_source'] = r['name_source']
             
-            if 'higher_taxonomy' in r.keys():
+            if 'higher_taxonomy' in list(r.keys()):
                 outdict['higher_taxonomy'] = r['higher_taxonomy']
             
-            if r['level'] == 'species' and 'ncbi_id' in r.keys():
+            if r['level'] == 'species' and 'ncbi_id' in list(r.keys()):
                 outdict['sp_ncbi_id'] = r['ncbi_id']
             
             break
@@ -565,7 +565,6 @@ if __name__ == "__main__":
     parser.add_argument('input', help = 'Path to input file, see docs for options')
     #parser.add_argument('output', help = 'Path to problem file')
     parser.add_argument('-p', '--gnparser', help = 'Path to GNparser (by default search in PATH)')
-    parser.add_argument('-o','--overwrite', help = 'Use this flag to overwrite all taxonomic information', action = 'store_true')
     parser.add_argument('-c','--context', help = 'Taxonomic context (see Open Tree Taxonomy API for options)', default = 'All life')
     parser.add_argument('-f','--tax-filter', help = '''Comma-separated list of names of higher taxa in which queries must be included. 
                                                     Used to filter results from services other than Open Tree Taxonomy.
@@ -600,20 +599,9 @@ if __name__ == "__main__":
 
         for i in range(len(records)):
             try:
-                has_tax = any([key.find('tax_') > -1 for key in records[i].iterkeys()])
+                has_tax = any([key.find('tax_') > -1 for key in list(records[i].keys())])
             except KeyError:
                 has_tax = False
-
-            #if marked not to overwrite and already has tax info, write record and go to next record
-            if has_tax and not args.overwrite:
-                print >>outfile, records[i]
-                sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' already has taxonomic info, skipping          \n')
-                continue
-            #if marked to overwrite and already has tax info, remove taxonomic keys before looking for information
-            elif has_tax and args.overwrite:
-               for key in records[i].keys():
-                   if key in ['cg','cs','problem'] or key.find('tax_') > -1:
-                       del records[i][key]
                        
             #first, record version of open tree taxonomy used here
             records[i]['tax_ott_version'] = ott_version
@@ -631,7 +619,7 @@ if __name__ == "__main__":
             #if nothing was found, add to problems with flag no_name               
             if not searchname_response:
                 records[i].update({'problem':'no_name'})
-                print >>problems, records[i]
+                print(records[i], file=problems)
                 sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: no_name\n')
                 continue
             
@@ -667,7 +655,7 @@ if __name__ == "__main__":
                     
                 elif searchname_response['higher_taxonomy'] is None:
                     records[i].update({'problem':'no_taxonomy'})
-                    print >>problems, records[i]
+                    print(records[i], file=problems)
                     sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: no_taxonomy\n')
                     continue
                     
@@ -707,12 +695,12 @@ if __name__ == "__main__":
                     
             #finally, if record had a species read from OCR but only genus found, output to problems
             
-            if 's' in records[i].keys() and 'cs' not in records[i].keys() and not args.genus_search:
+            if 's' in list(records[i].keys()) and 'cs' not in list(records[i].keys()) and not args.genus_search:
                 records[i].update({'problem':'no_species'})
-                print >>problems, records[i]
+                print(records[i], file=problems)
                 sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: no_species\n')
             else:
-                print >>outfile, records[i]
+                print(records[i], file=outfile)
                 sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Record OK          \n')
                 
 
