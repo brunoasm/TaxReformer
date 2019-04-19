@@ -37,6 +37,8 @@ After a successful run, the program will write two output files names `matched_n
 
 `-h` or `--help` Shows help
 
+`-o` or `--output` Prefix to add to output files. Default is `output`.
+
 `-p` or `--gnparser` Path to GNparser executable. Not needed if it is on `$PATH`
 
 `-c` or `--context` Taxonomic context to use for Open Tree Taxonomy (see [Open Tree of Life API](https://github.com/OpenTreeOfLife/germinator/wiki/TNRS-API-v3#contexts) for options). Defaults to **"All life"**

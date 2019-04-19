@@ -220,62 +220,6 @@ def otl_checkname(query, context):
             
     return outdict
 
-            
-#pygbif does not work in python 3, removing support for now
-#def gbif_checkname(query, taxfilter):
-#    #since pygbif always autocompletes names, this can be a problem for genera
-#    #therefore, we will assume that, if query has spaces, it is a species, or a genus otherwise
-#    if ' ' in query:
-#        rank = 'SPECIES'
-#    else:
-#        rank = 'GENUS'
-#
-#    outdict = None
-#    
-#    r = pygbif.species.name_lookup(query, rank = rank)
-#    if r['count']:
-#        for i, first_match in enumerate(r['results']): #search for first match to an arthropod
-#            found = False
-#            
-#            if not taxfilter: #if taxonomic filter not provided, always keep record
-#                found = True
-#                break
-#            
-#            for k,x in first_match.iteritems(): #if taxonomic filter provided, only keep if matches filter
-#                if x in taxfilter:
-#                    found = True
-#                    break
-#                
-#            if found:
-#                break
-#        else: #if loop ends, record does not match filter
-#            warnings.warn(query + ': found in GBIF, but not a member of requested taxonomic filters: ' + ','.join(taxfilter))
-#            return None
-#                    
-#        #if an arthropod, get information
-#        first_match = r['results'][i]
-#        gbif_id = first_match['key']
-#        
-#        #search for family and order in higher taxonomy, but if missing just skip
-#        try:
-#            higher_taxonomy = {'tax_' + rank:first_match[rank] for rank in ['family','order']}
-#        except KeyError:
-#            return None
-#
-#        try:
-#            name = first_match['accepted']
-#        except KeyError:
-#            name = first_match['scientificName']
-#            
-#        if first_match['rank'] == 'SPECIES':
-#            outdict =  {'current_name': name, 'id': gbif_id, 'level': 'species', 'name_source': 'GBIF', 'higher_taxonomy':higher_taxonomy}
-#        elif first_match['rank'] == 'GENUS':
-#            outdict =  {'current_name': name, 'id': gbif_id, 'level': 'genus', 'name_source': 'GBIF', 'higher_taxonomy':higher_taxonomy}
-#        else:
-#            warnings.warn(query + ': found in GBIF, but not as genus or species')
-#            return None
-#    
-#    return outdict
 
     
 #Function to parse classification paths obtained from Global Names
@@ -481,29 +425,7 @@ def search_name(full_name, gnpath, context, taxfilter):
             outdict['higher_taxonomy'] = taxonomy_OTT(results[best]['taxon']['ott_id'])
             
             return outdict
-        #if not found, try fuzzy searching OTL using the GN genus name
-        #############SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM 
-                #############SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM 
-                        #############SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM 
-                                #############SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM SAM 
-        #remove this else block if fuzzy searching genera in OTT is not desired!
-        #else:
-        #    r = otl_tnrs(genus, context = context)
-        #    if r.json()['results']:
-        #        #if results found, return the best
-        #        #if not, we will keep global names  
-        #        results = r.json()['results'][0]['matches']
-        #        scores = [results[i]['score'] for i in range(len(results))] #make a list with matches' scores
-        #        best = scores.index(max(scores)) #returns index for result with highest score. If more than one, keeps first
-        #        
-        #        outdict['tax_level'] = results[best]['taxon']['rank']                        
-        #        outdict['matched_name'] =  results[best]['matched_name']
-        #        outdict['current_name'] =  results[best]['taxon']['name']
-        #        outdict['source_id'] = results[best]['taxon']['ott_id']
-        #        outdict['tax_source'] = 'OTT'
-        #        outdict['higher_taxonomy'] = taxonomy_OTT(results[best]['taxon']['ott_id'])
-        #        
-        #        return outdict
+
                 
     #now that a name was found in global names or OTT, try exact matches in our taxonomic sources (currently, OTT only)
     for search_fun in namesearch_functions:
@@ -564,6 +486,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help = 'Path to input file, see docs for options')
     #parser.add_argument('output', help = 'Path to problem file')
+    parser.add_argument('-o','--output', help = 'Prefix to add to output files', default = 'output')
     parser.add_argument('-p', '--gnparser', help = 'Path to GNparser (by default search in PATH)')
     parser.add_argument('-c','--context', help = 'Taxonomic context (see Open Tree Taxonomy API for options)', default = 'All life')
     parser.add_argument('-f','--tax-filter', help = '''Comma-separated list of names of higher taxa in which queries must be included. 
@@ -581,8 +504,8 @@ if __name__ == "__main__":
     #first, generate name of outfile
     #outbase = 'corrected_' + os.path.basename(args.input) #12-aug-16 we changed the folder structure. Keeping code here for now in case needed
     #outpath = os.path.join(os.path.dirname(args.input), outbase)
-    outpath = '.matched.txt'
-    problems_path = '.unmatched.txt'
+    outpath = args.output + '_matched.txt'
+    problems_path = args.output + '_unmatched.txt'
 
     #read input
     intable = pandas.read_csv(args.input)
@@ -669,32 +592,7 @@ if __name__ == "__main__":
                 records[i].update(searchname_response['higher_taxonomy'])
                 
 
-            #parsed_orders = ['Strepsiptera','Phasmatodea','Orthoptera','Neuroptera','Hemiptera','Ephemeroptera','Coleoptera','Lepidoptera','Hymenoptera','Odonata','Blattodea','Dermaptera','Diptera','Embioptera','Grylloblattodea','Isoptera','Mantophasmatodea','Mecoptera','Megaloptera','Phthiraptera','Plecoptera','Psocoptera','Raphidioptera','Siphonaptera','Thysanoptera','Trichoptera','Zoraptera']
-            #permitted_orders = ['Diplura','Collembola','Mantodea','Protura','Thysanura','Zygentoma','Archaeognatha','Strepsiptera','Phasmatodea','Orthoptera','Neuroptera','Hemiptera','Ephemeroptera','Coleoptera','Lepidoptera','Hymenoptera','Odonata','Blattodea','Dermaptera','Diptera','Embioptera','Grylloblattodea','Isoptera','Mantophasmatodea','Mecoptera','Megaloptera','Phthiraptera','Plecoptera','Psocoptera','Raphidioptera','Siphonaptera','Thysanoptera','Trichoptera','Zoraptera']
-
-            #If record contains taxonomic tree and is in the correct Order, save to outfile
-            
-            #there should be no need for error handling here. Commenting out, since it might mask problems with the code above (which should have caught errors already!)
-            #try:
-
-#            if 'tax_order' not in records[i]:
-#                records[i].update({'problem':'order'})
-#                print >>problems, records[i]
-#                sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
-#                continue              
-            #elif records[i]['order1'] in parsed_orders and records[i]['tax_order'] != records[i]['order1']:
-            #    records[i].update({'problem':'order'})
-            #    print >>problems, records[i]
-            #    sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
-            #    continue
-            #elif records[i]['tax_order'] not in permitted_orders:
-            #    records[i].update({'problem':'order'})
-            #    print >>problems, records[i]
-            #    sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error: order\n')
-            #    continue              
-                    
-            #finally, if record had a species read from OCR but only genus found, output to problems
-            
+            #finally, if record had a species read from OCR but only genus found, output to problems            
             if 's' in list(records[i].keys()) and 'cs' not in list(records[i].keys()) and not args.genus_search:
                 records[i].update({'problem':'no_species'})
                 print(records[i], file=problems)
@@ -702,14 +600,6 @@ if __name__ == "__main__":
             else:
                 print(records[i], file=outfile)
                 sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Record OK          \n')
-                
-
-            
-            #this part should not be necessary, since problems were detected above. commenting out
-            #except(KeyError):
-            #    records[i].update({'problem':'not_found'})
-            #    print >>problems, records[i]
-            #    sys.stdout.write('Record ' + str(i + 1) + ' of ' + str(len(records)) + ' processed. Taxonomy Error\n')
                 
             
             sys.stdout.flush()
