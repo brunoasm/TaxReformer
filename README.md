@@ -8,14 +8,13 @@ In addition to corrected names with nomenclatural updates (in case of a synonym)
 
 ## Dependencies
 
-This script runs on python 2.7 and needs the following python libraries:
+This script runs on python 3 and needs the following python libraries:
 ```
-pygbif
 pandas
 fuzzywuzzy
 ```
 
-Additionally, you need to download [GNparser](https://github.com/GlobalNamesArchitecture/gnparser#command-line-tool-and-socket-server): https://github.com/GlobalNamesArchitecture/gnparser#command-line-tool-and-socket-server. TaxReformer is compatible with GNparser v. 1.0.2.
+Additionally, you need to download [GNparser](https://gitlab.com/gogna/gnparser). TaxReformer is compatible with GNparser v. 0.8.0.
 
 
 In case GNparser is not on your $PATH, you need to provide its location (see usage below).
@@ -35,8 +34,6 @@ After a successful run, the program will write two output files names `matched_n
 `-h` or `--help` Shows help
 
 `-p` or `--gnparser` Path to GNparser executable. Not needed if it is on `$PATH`
-
-`-o` or `--overwrite` Overwrite taxonomic information if available. Without this flag, the program skips records that already have updated genus or species names.
 
 `-c` or `--context` Taxonomic context to use for Open Tree Taxonomy (see [Open Tree of Life API](https://github.com/OpenTreeOfLife/germinator/wiki/TNRS-API-v3#contexts) for options). Defaults to **"All life"**
 
