@@ -48,17 +48,24 @@ After a successful run, the program will write two output files names `matched_n
 To see available options, simply type:
 ```python TaxReformer.py -h```
 
-If using docker, use:
+   With docker, use:
+   
 ```docker run -v $PWD:/app brunoasm/taxreformer -h```
 
 To find Arthropod names from a file named **input.csv**:
 
 ```python TaxReformer.py --context Arthropods --tax-filter Arthropoda input.csv```
+
+   With docker, use:
+   
 ```docker run -v $PWD:/app brunoasm/taxreformer --context Arthropods --tax-filter Arthropoda input.csv```
 
 To find bird names from a file named **input.csv**:
 
 ```python TaxReformer.py --context Birds --tax-filter Aves input.csv```
+
+   With docker, use:
+   
 ```docker run -v $PWD:/app brunoasm/taxreformer --context Birds --tax-filter Aves input.csv```
 
 Same as before, but giving the path to GNparser (in the same folder as the input)
@@ -68,6 +75,9 @@ Same as before, but giving the path to GNparser (in the same folder as the input
 To find names of termites, considering that they might be classified under roaches in some databases. Notice also that Open Tree of Life does not have a context for termites, so we will use insects instead:
 
 ```python TaxReformer.py --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
+
+ With docker, use:
+ 
 ```docker run -v $PWD:/app brunoasm/taxreformer --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
 
 The folder [examples](./examples/) contains a test input file and the expected output when running:
