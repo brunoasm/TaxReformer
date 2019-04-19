@@ -64,7 +64,7 @@ def otl_tnrs(query, do_approximate = True, wait_time = 600, context = 'Arthropod
     contact_otl = True
     while contact_otl:
         try:
-            r = requests.post('https://api.opentreeoflife.org/v3/tnrs/match_names',
+            r = requests.post('https://ot41.opentreeoflife.org/v3/tnrs/match_names',
                     json = {'names':[query, query],
                             'do_approximate_matching':do_approximate,
                             'context_name':context})
@@ -93,11 +93,11 @@ def otl_taxon(query, wait_time = 600, ncbi = False):
     while contact_otl:
         try:
             if ncbi:
-                r = requests.post('https://api.opentreeoflife.org/v3/taxonomy/taxon_info',
+                r = requests.post('https://ot41.opentreeoflife.org/v3/taxonomy/taxon_info',
                     json = {'source_id':'ncbi:' + str(query), #id for taxon being searched
                             'include_lineage':True}) #include higher taxa
             else:
-                r = requests.post('https://api.opentreeoflife.org/v3/taxonomy/taxon_info',
+                r = requests.post('https://ot41.opentreeoflife.org/v3/taxonomy/taxon_info',
                                 json = {"ott_id":query, #id for taxon being searched
                                         "include_lineage":True}) #include higher taxa
         except (SSLError, ConnectionError):
@@ -518,7 +518,8 @@ if __name__ == "__main__":
     #loop through records, correct names and add taxonomy. Write to file after each record
     with open(outpath,'w') as outfile, open(problems_path, 'w') as problems:
         #record version of ott taxonomy used here
-        ott_version = requests.post('https://api.opentreeoflife.org/v3/taxonomy/about').json()['source']
+        #ott_version = requests.post('https://ot41.opentreeoflife.org/v3/taxonomy/about').json()['source']
+        ott_version = requests.post('https://ot41.opentreeoflife.org/v3/taxonomy/about').json()['source']
 
         for i in range(len(records)):
             try:

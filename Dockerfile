@@ -14,7 +14,7 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN conda config --add channels conda-forge && \
     conda install --yes --file requirements.txt && \ 
-    conda clean --yes --all
+    conda clean --yes -i -l -t
 
 # Run app.py when the container launches
 ENTRYPOINT ["python", "TaxReformer.py"]
