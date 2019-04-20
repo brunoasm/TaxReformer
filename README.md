@@ -22,7 +22,7 @@ In case GNparser is not installed in a folder in your `$PATH`, you need to provi
 There is a docker image available for this program, which includes all dependencies. If you have [Docker](https://www.docker.com) installed, use the following to run the latest version:
 
 ```
-docker run -v $PWD:/app brunoasm/taxreformer input.csv 
+docker run -v $PWD:/input brunoasm/taxreformer input.csv 
 ```
 (Assuming the input file is named input.csv - see information on input below)
 
@@ -49,7 +49,7 @@ After a successful run, the program will write two output files names `matched_n
 
 1. To see available options, simply type: ```python TaxReformer.py -h```
 
-   With docker, use: ```docker run -v $PWD:/app brunoasm/taxreformer -h```
+   With docker, use: ```docker run -v $PWD:/input brunoasm/taxreformer -h```
 
 2. To find Arthropod names from a file named **input.csv**:
 
@@ -57,7 +57,7 @@ After a successful run, the program will write two output files names `matched_n
 
    With docker, use:
    
-```docker run -v $PWD:/app brunoasm/taxreformer --context Arthropods --tax-filter Arthropoda input.csv```
+```docker run -v $PWD:/input brunoasm/taxreformer --context Arthropods --tax-filter Arthropoda input.csv```
 
 3. To find bird names from a file named **input.csv**:
 
@@ -65,7 +65,7 @@ After a successful run, the program will write two output files names `matched_n
 
    With docker, use:
    
-```docker run -v $PWD:/app brunoasm/taxreformer --context Birds --tax-filter Aves input.csv```
+```docker run -v $PWD:/input brunoasm/taxreformer --context Birds --tax-filter Aves input.csv```
 
 4. Same as before, but giving the path to GNparser (in the same folder as the input)
 
@@ -77,7 +77,7 @@ After a successful run, the program will write two output files names `matched_n
 
  With docker, use:
  
-```docker run -v $PWD:/app brunoasm/taxreformer --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
+```docker run -v $PWD:/input brunoasm/taxreformer --context Insects --tax-filter Isoptera,Blattodea,Termitoidea,Blattaria input.csv```
 
 The folder [examples](./examples/) contains a test input file and the expected output when running:
 

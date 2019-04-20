@@ -14,7 +14,8 @@ RUN conda config --add channels conda-forge && \
 
 # Set workdir and copy files
 WORKDIR /app
-COPY . /app
+ADD TaxReformer.py /app
 
-# Run app.py when the container launches
-ENTRYPOINT ["python", "TaxReformer.py"]
+# Run when the container launches
+WORKDIR /input
+ENTRYPOINT ["python", "/app/TaxReformer.py"]
