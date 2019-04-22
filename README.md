@@ -8,7 +8,7 @@ In addition to corrected names with nomenclatural updates (in case of a synonym)
 
 ## Dependencies
 
-This script runs on python 3 and needs the following python libraries:
+This script runs on Python 3 and needs the following python libraries:
 ```
 pandas
 fuzzywuzzy
