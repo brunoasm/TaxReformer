@@ -6,6 +6,8 @@ It tries to use Open Tree Taxonomy whenever possible, pulling information from o
 
 In addition to corrected names with nomenclatural updates (in case of a synonym), the full taxonomic hierarchy is also returned. This tool was first used to study the evolution of insect eggs, and we will soon submit the manuscript.
 
+To check the code originally used to generate the insect egg dataset, see the [first release] (https://github.com/brunoasm/TaxReformer/releases/tag/egg_database) of this repository.
+
 ## Dependencies
 
 This script runs on Python 3 and needs the following python libraries:
