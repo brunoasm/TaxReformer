@@ -16,7 +16,7 @@ pandas
 fuzzywuzzy
 ```
 
-Additionally, you need to download [GNparser](https://gitlab.com/gogna/gnparser). TaxReformer is compatible with GNparser v. 0.8.0.
+Additionally, you need to download [GNparser](https://gitlab.com/gogna/gnparser). TaxReformer is compatible with GNparser v. 0.8.0
 
 
 In case GNparser is not installed in a folder in your `$PATH`, you need to provide its location (see usage below).
