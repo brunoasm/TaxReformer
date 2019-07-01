@@ -7,7 +7,7 @@ RUN wget https://www.dropbox.com/s/lhlik0je9fmf164/gnparser-v0.8.0-linux.tar.gz 
     cp gnparser /usr/local/bin && \
     rm -f gnparser*
 
-# Install any needed packages specified in requirements.txt
+# Install python packages
 RUN conda config --add channels conda-forge && \
     conda install --yes fuzzywuzzy=0.15.1 pandas=0.24.2 python-Levenshtein=0.12.0 && \ 
     conda clean --yes -i -l -t

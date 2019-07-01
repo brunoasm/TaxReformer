@@ -522,10 +522,30 @@ if __name__ == "__main__":
         ott_version = requests.post('https://api.opentreeoflife.org/v3/taxonomy/about').json()['source']
 
         for i in range(len(records)):
-            try:
-                has_tax = any([key.find('tax_') > -1 for key in list(records[i].keys())])
-            except KeyError:
-                has_tax = False
+            
+            #below is not used anymore, records always rewritten
+            #try:
+            #    has_tax = any([key.find('tax_') > -1 for key in list(records[i].keys())])
+            #except KeyError:
+            #    has_tax = False
+            
+            #we will first verify if name is a duplicate from a previously searched name
+            #if it is, we will just copy taxonomic information
+            if i > 0:
+                previous_matches = [j for j in range(i) if records[i]['name'] == records[j]['name']]
+                if previous_matches:
+                    for k, v in records[previous_matches[0]].items():
+                        if 'tax_' in k:
+                            records[i][k] = v
+                    sys.stdout.write('Record ' + str(i + 1) + 
+                                     ' of ' + 
+                                     str(len(records)) + 
+                                     ' processed. Name previously found (record ' + 
+                                     str(previous_matches[0] + 1)+
+                                     '). Record OK\n')
+                    continue
+                    
+            
                        
             #first, record version of open tree taxonomy used here
             records[i]['tax_ott_version'] = ott_version
