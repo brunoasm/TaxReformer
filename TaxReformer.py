@@ -540,9 +540,9 @@ if __name__ == "__main__":
                     sys.stdout.write('Record ' + str(i + 1) + 
                                      ' of ' + 
                                      str(len(records)) + 
-                                     ' processed. Name previously found (record ' + 
-                                     str(previous_matches[0] + 1)+
-                                     '). Record OK\n')
+                                     ' processed. Name previously found. Copying info from record ' + 
+                                     str(previous_matches[0] + 1) +
+                                     '.\n')
                     continue
                     
             
@@ -551,7 +551,7 @@ if __name__ == "__main__":
             records[i]['tax_ott_version'] = ott_version
             
             try:
-                searchname_response =  search_name(records[i]['name'], gnpath, context = args.context, taxfilter = args.tax_filter)
+                searchname_response =  search_name(records[i]['name'].capitalize(), gnpath, context = args.context, taxfilter = args.tax_filter)
             except (ValueError, TypeError):
                 searchname_response = None
             #except KeyError as err:
