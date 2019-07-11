@@ -6,7 +6,9 @@ It tries to use Open Tree Taxonomy whenever possible, pulling information from o
 
 In addition to corrected names with nomenclatural updates (in case of a synonym), the full taxonomic hierarchy is also returned. This tool was first used to study the evolution of insect eggs, and we will soon submit the manuscript.
 
-To check the code originally used to generate the insect egg dataset, see the [first release] (https://github.com/brunoasm/TaxReformer/releases/tag/egg_database) of this repository.
+To check the code originally used to generate the insect egg dataset, see the [first release](https://github.com/brunoasm/TaxReformer/releases/tag/egg_database) of this repository. We explain how we used Tax Reformer in this citation:
+
+Church SH, Donoughe S, de Medeiros BAS & Extavour CG 2019. [A dataset of egg size and shape from more than 6,700 insect species](https://dx.doi.org/10.1038/s41597-019-0049-y). Scientific Data 6:104. DOI: 10.1038/s41597-019-0049-y
 
 ## Dependencies
 
@@ -95,9 +97,9 @@ Since each database uses different higher taxonomies, it is hard to delimit cont
 
 # Author
 
-This program was written by [Bruno de Medeiros](https://github.com/brunoasm). For now, you can cite the following in case you use it:
+This program was written by [Bruno de Medeiros](https://github.com/brunoasm). If you use it in a published research, please cite the following publication:
 
-`de Medeiros BAS. 2018. TaxReformer. Available at: https://github.com/brunoasm/TaxReformer`
+Church SH, Donoughe S, de Medeiros BAS & Extavour CG 2019. [A dataset of egg size and shape from more than 6,700 insect species](https://dx.doi.org/10.1038/s41597-019-0049-y). Scientific Data 6:104. DOI: 10.1038/s41597-019-0049-y
 
 
 
