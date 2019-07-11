@@ -1,12 +1,10 @@
 # TaxReformer
 
-This python program uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to update a list of species or genus names, possibly containing spell errors.
+This python program uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to correct mispellings, find senior synonyms and retrieve higher taxonomy for a list of taxonomic names of any level.
 
 It tries to use Open Tree Taxonomy whenever possible, pulling information from other databases in case a name is not found there. The source of information retrieved is saved in the output, so records not on OTT can be easily filtered out.
 
-In addition to corrected names with nomenclatural updates (in case of a synonym), the full taxonomic hierarchy is also returned. This tool was first used to study the evolution of insect eggs, and we will soon submit the manuscript.
-
-To check the code originally used to generate the insect egg dataset, see the [first release](https://github.com/brunoasm/TaxReformer/releases/tag/egg_database) of this repository. We explain how we used Tax Reformer in this citation:
+We explain how we used Tax Reformer to produce a dataset of insect eggs in this citation:
 
 Church SH, Donoughe S, de Medeiros BAS & Extavour CG 2019. [A dataset of egg size and shape from more than 6,700 insect species](https://dx.doi.org/10.1038/s41597-019-0049-y). Scientific Data 6:104. DOI: 10.1038/s41597-019-0049-y
 
