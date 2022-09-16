@@ -510,7 +510,10 @@ if __name__ == "__main__":
     #read input
     intable = pandas.read_csv(args.input)
     other_cols = intable.columns.tolist()
-    other_cols.remove('name')
+    try:
+        other_cols.remove('name')
+    except ValueError:
+        raise Exception('The input file must have a column named "name".')
     
     records = intable.to_dict('records')
     #print records
