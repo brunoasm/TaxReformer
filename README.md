@@ -14,6 +14,7 @@ This script runs on Python 3 and needs the following python libraries:
 ```
 pandas
 fuzzywuzzy
+requests
 ```
 
 Additionally, you need to download [GNparser](https://github.com/gnames/gnparser). TaxReformer is compatible with GNparser v.1.6.7
