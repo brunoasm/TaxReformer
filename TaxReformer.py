@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 ### Created by Bruno de Medeiros (souzademedeiros@fas.harvard.edu), starting on 08-jun-2016
 ### The purpose of the script is to correct name spelling
@@ -36,24 +36,18 @@ from numpy import nan #needed at the end to parse temporary file
 
 def GNparser(name, gnpath):
     out_dict = {}
-    result_string = subprocess.check_output([gnpath, name], stderr=subprocess.STDOUT) #call GNparser
-    result_dict = json.loads(result_string)['details'][0]
-    try:
-        out_dict['cg'] = result_dict['genus']['value']
-    except KeyError:
-        pass
-    try:
-        out_dict['cs'] = result_dict['specificEpithet']['value']
-    except KeyError:
-        pass
-    try:
-        out_dict['csub'] = result_dict['infraspecificEpithets'][0]['value']
-    except KeyError:
-        pass
-    try:
-        out_dict['cg'] = result_dict['uninomial']['value']
-    except KeyError:
-        pass
+    result_string = subprocess.check_output([gnpath,'--details', '--format','compact', name], stderr=subprocess.STDOUT) #call GNparser
+    result_dict = json.loads(result_string)
+
+    for word in result_dict['words']:
+        if word['wordType'] == 'GENUS':
+            out_dict['cg'] = word['normalized']
+        elif word['wordType'] == 'UNINOMIAL':
+            out_dict['cg'] = word['normalized']
+        elif word['wordType'] == 'SPECIES':
+            out_dict['cs'] = word['normalized']
+        elif word['wordType'] == 'INFRASPECIES':
+            out_dict['csub'] = word['normalized']
 
     return out_dict
 

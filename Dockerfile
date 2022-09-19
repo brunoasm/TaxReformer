@@ -2,7 +2,7 @@
 FROM continuumio/miniconda3
 
 # Get gnparser
-RUN wget https://www.dropbox.com/s/lhlik0je9fmf164/gnparser-v0.8.0-linux.tar.gz && \
+RUN wget https://github.com/gnames/gnparser/releases/download/v1.6.7/gnparser-v1.6.7-linux.tar.gz && \
     tar xvf gnparser*gz && \
     cp gnparser /usr/local/bin && \
     rm -f gnparser*
