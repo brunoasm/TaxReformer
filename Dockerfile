@@ -1,5 +1,5 @@
 # Use anaconda as a parent image
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:4.12.0
 
 # Get gnparser
 RUN wget https://github.com/gnames/gnparser/releases/download/v1.6.7/gnparser-v1.6.7-linux.tar.gz && \
@@ -9,7 +9,7 @@ RUN wget https://github.com/gnames/gnparser/releases/download/v1.6.7/gnparser-v1
 
 # Install python packages
 RUN conda config --add channels conda-forge && \
-    conda install --yes python=3.6 fuzzywuzzy=0.15.1 pandas=0.24.2 python-Levenshtein=0.12.0 requests && \ 
+    conda install --yes fuzzywuzzy=0.18 pandas=1.4.3 python-Levenshtein=0.12.2 requests && \ 
     conda clean --yes -i -l -t
 
 # Set workdir and copy files
