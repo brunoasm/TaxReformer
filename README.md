@@ -30,7 +30,7 @@ docker run -v $PWD:/input brunoasm/taxreformer input.csv
 (Assuming the input file is named input.csv - see information on input below)
 
 ## Input
-Default input format is a csv table containing a column named **name** including the names to be searched. Other columns are ignored and will be maintained in the output. See folder [examples](examples/) for a valid input file.
+Default input format is a csv table containing a column named **`name`** including the names to be searched. Other columns are ignored and will be maintained in the output. See folder [examples](examples/) for a valid input file.
 
 ## Output
 After a successful run, the program will write two output files names `matched_names.csv` and `unmatched_names.csv`, for names that could and could not be matched, respectively. These include all columns initially present in the input data table, as well as new columns with information retrieved by TaxReformer.
