@@ -1,5 +1,5 @@
 # Use anaconda as a parent image
-FROM continuumio/miniconda3:4.12.0
+FROM continuumio/miniconda3:23.5.2-0
 
 # tricks to reduce image size:https://jcristharif.com/conda-docker-tips.html
 
