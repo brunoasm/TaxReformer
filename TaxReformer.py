@@ -515,7 +515,6 @@ if __name__ == "__main__":
     #loop through records, correct names and add taxonomy. Write to file after each record
     with open(outpath,'w') as outfile, open(problems_path, 'w') as problems:
         #record version of ott taxonomy used here
-        #ott_version = requests.post('https://api.opentreeoflife.org/v3/taxonomy/about').json()['source']
         ott_version = requests.post('https://api.opentreeoflife.org/v3/taxonomy/about').json()['source']
 
         for i in range(len(records)):
@@ -528,19 +527,28 @@ if __name__ == "__main__":
             
             #we will first verify if name is a duplicate from a previously searched name
             #if it is, we will just copy taxonomic information
-            if i > 0:
-                previous_matches = [j for j in range(i) if records[i]['name'] == records[j]['name']]
-                if previous_matches:
-                    for k, v in records[previous_matches[0]].items():
-                        if 'tax_' in k:
-                            records[i][k] = v
-                    sys.stdout.write('Record ' + str(i + 1) + 
-                                     ' of ' + 
-                                     str(len(records)) + 
-                                     ' processed. Name previously found. Copying info from record ' + 
-                                     str(previous_matches[0] + 1) +
-                                     '.\n')
-                    continue
+            previous_matches = [j for j in range(i) if records[i]['name'] == records[j]['name']]
+            if previous_matches:
+                for k, v in records[previous_matches[0]].items():
+                    if 'tax_' in k:
+                        records[i][k] = v
+                        
+                    if 'problem' in k:
+                        records[i][k] = v
+                        
+                if 'problem' in records[i].keys():
+                    print(records[i], file=problems)
+                else:
+                    print(records[i], file=outfile)
+                        
+                sys.stdout.write('Record ' + str(i + 1) + 
+                                 ' of ' + 
+                                 str(len(records)) + 
+                                 ' processed. Name previously found. Copying info from record ' + 
+                                 str(previous_matches[0] + 1) +
+                                 '.\n')
+                continue
+            
                     
             
                        
