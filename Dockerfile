@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y wget && \
     rm -rf /var/lib/apt/lists/*
 
 # Install python packages and cleanup
-RUN micromamba install --yes -n base -c conda-forge \
+RUN micromamba install --yes -n base -c conda-forge -c Anaconda \
+          python \
           nomkl \
           fuzzywuzzy=0.18 \
           pandas=1.4.3 \
@@ -31,5 +32,5 @@ COPY TaxReformer.py /app
 
 # Run when the container launches
 WORKDIR /input
-ENTRYPOINT ["python", "/app/TaxReformer.py"]
+ENTRYPOINT ["/usr/local/bin/_entrypoint.sh", "python", "/app/TaxReformer.py"]
 
