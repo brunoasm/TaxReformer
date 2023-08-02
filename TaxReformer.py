@@ -530,7 +530,7 @@ if __name__ == "__main__":
             previous_matches = [j for j in range(i) if records[i]['name'] == records[j]['name']]
             if previous_matches:
                 for k, v in records[previous_matches[0]].items():
-                    if 'tax_' in k:
+                    if 'tax_' in k or k in ['rank', 'csub', 'cg', 'cs']:
                         records[i][k] = v
                         
                     if 'problem' in k:
