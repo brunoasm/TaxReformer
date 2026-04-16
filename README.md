@@ -1,3 +1,5 @@
+2026 Note: this code no longer works due to changes in downstream APIs. There are also better tools for name resolution now available. I suggest using something else.
+
 # TaxReformer
 
 This python program uses [Open Tree Taxonomy](https://tree.opentreeoflife.org/about/taxonomy-version/ott3.0) and [Global Names Architecture](http://globalnames.org) to correct mispellings, find senior synonyms and retrieve higher taxonomy for a list of taxonomic names of any level.
